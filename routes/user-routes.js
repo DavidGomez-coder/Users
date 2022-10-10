@@ -1,5 +1,5 @@
 const express = require('express')
-const { addUser, getAllUsers, getUser, addNewConnection } = require('../controllers/userController')
+const { addUser, getAllUsers, getUser, setConnection, getConnections } = require('../controllers/userController')
 
 const router = express.Router()
 
@@ -7,7 +7,8 @@ const router = express.Router()
 router.post('/user/add', addUser);
 router.get('/user/:id', getUser);
 router.get('/users', getAllUsers);
-
+router.put('/:id1/connect/:id2', setConnection);
+router.get('/connections/:id', getConnections);
 
 module.exports = {
     routes: router
