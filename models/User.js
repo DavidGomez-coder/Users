@@ -1,8 +1,8 @@
 class User {
-    constructor(id, name){
+    constructor(id, name, connections){
         this.id = id;
         this.name = name;
-        this.connections = new Set(); //single id set (ensure that an user appear only once)
+        this.connections = connections //single id set (ensure that an user appear only once)
     }
 
     setId(id) { this.id = id; }
@@ -13,6 +13,7 @@ class User {
 
     addConnection(idConnection) { this.connections.add(idConnection); }
 
+    setConnections(connectinos) { this.connections = connectinos; }
     getConnections(){ return this.connections; }
 
 }

@@ -22,7 +22,11 @@ const getUser = async (req, res, next) => {
         if (!data.exists) {
             res.status(404).send('There are not any user to display');
         } else{
-            res.send(data.data());
+            let data_to_send = {
+                "name" : data.data().name,
+                "connections" : data.data().connections
+            }
+            res.send(data_to_send);
         }
 
     }catch(error){
@@ -40,7 +44,7 @@ const getAllUsers = async (req, res, next) => {
             res.status(404).send('There are not users to display');
         } else {
             data.forEach(atrb => {
-                const nUser = new User(atrb.id, atrb.data().name);
+                const nUser = new User(atrb.id, atrb.data().name, atrb.data().connections);
                 users_collection.push(nUser);
             });
             res.send(users_collection);
@@ -52,9 +56,21 @@ const getAllUsers = async (req, res, next) => {
     }
 }
 
+const addNewConnection = async (req, res, next) => {
+    try {
+       
+        
+        
+
+    }catch(error){
+        res.status(400).send(error.message);
+    }
+}
+
 
 module.exports = {
     addUser,
     getAllUsers,
-    getUser
+    getUser,
+    addNewConnection
 }
