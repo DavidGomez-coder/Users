@@ -16,3 +16,5 @@ class User {
     getConnections(){ return this.connections; }
 
 }
+
+module.exports = User;
