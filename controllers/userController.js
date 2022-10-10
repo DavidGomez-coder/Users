@@ -5,7 +5,14 @@ const firestore = firebase.firestore()
 const addUser = async (req, res, next) => {
     try {
         const data = req.body;
-        const user = await firestore.collection('users').doc().set(data);
+
+        //add a 0 length set connection
+        let user_data = {
+            ...data,
+            "connections" : []
+        }
+
+        const user = await firestore.collection('users').doc().set(user_data);
         res.send(`User with  name ${data.name} has been added`);
 
     }catch(error){
@@ -44,7 +51,7 @@ const getAllUsers = async (req, res, next) => {
             res.status(404).send('There are not users to display');
         } else {
             data.forEach(atrb => {
-                const nUser = new User(atrb.id, atrb.data().name, atrb.data().connections);
+                const nUser = new User(atrb.id, atrb.data().name);
                 users_collection.push(nUser);
             });
             res.send(users_collection);
@@ -56,21 +63,10 @@ const getAllUsers = async (req, res, next) => {
     }
 }
 
-const addNewConnection = async (req, res, next) => {
-    try {
-       
-        
-        
-
-    }catch(error){
-        res.status(400).send(error.message);
-    }
-}
 
 
 module.exports = {
     addUser,
     getAllUsers,
-    getUser,
-    addNewConnection
+    getUser
 }

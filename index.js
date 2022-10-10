@@ -5,6 +5,7 @@ const config = require('./config')
 
 //routes import
 const user_routes = require('./routes/user-routes')
+const connection_routes = require('./routes/connection-routes')
 
 
 
@@ -18,5 +19,6 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/api', user_routes.routes);
+app.use('/api', connection_routes.routes);
 
 app.listen(config.port, () => console.log(`App is running on ${config.host_url}`));
