@@ -14,6 +14,14 @@ class User {
     getName() { return this.name; }
     getConnections() { return this.connections; }
 
+
+    addConnection(newConnectUser) {
+        if (this.connections.includes(newConnectUser))
+            throw new Error(`User <${this.id}:${this.name} is already connected with ${newConnectUser}`);
+
+        this.connections.push(newConnectUser);
+    }
+
 }
 
 module.exports = User;

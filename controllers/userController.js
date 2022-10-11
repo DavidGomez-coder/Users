@@ -29,11 +29,9 @@ const getUser = async (req, res, next) => {
         if (!data.exists) {
             res.status(404).send('There are not any user to display');
         } else {
-            let data_to_send = {
-                "name": data.data().name,
-                "connections": data.data().connections
-            }
-            res.send(data.data());
+            let nuser = new User(data.id, data.data().name);
+            
+            res.send({"id": nuser.getId(), "name" : nuser.getName()});
         }
 
     } catch (error) {
@@ -52,8 +50,7 @@ const getAllUsers = async (req, res, next) => {
         } else {
             data.forEach(atrb => {
                 const nUser = new User(atrb.id, atrb.data().name);
-                nUser.setConnections(atrb.data().connections);
-                users_collection.push(nUser);
+                users_collection.push({"id" : nUser.getId(), "name" : nUser.getName()});
             });
             res.send(users_collection);
         }
@@ -85,8 +82,7 @@ const setConnection = async (req, res, next) => {
             //
             const user1_connections = data1.data().connections;
             const user2_connections = data2.data().connections;
-            console.log(user1_connections)
-            console.log(user2_connections)
+
             if (user1_connections.includes(id2) || user2_connections.includes(id1)) {
                 res.status(404).send(`This connection already exists`);
             } else {
@@ -100,11 +96,10 @@ const setConnection = async (req, res, next) => {
                     "connections": [...data2.data().connections, id1]
                 }
 
-                console.log(new_data1)
 
                 await user1.update(new_data1);
                 await user2.update(new_data2);
-                res.status(300).send("OK");
+                res.status(300).send("New connection has been stablished");
             }
         } else {
             res.status(404).send("Connection already exists");
@@ -126,17 +121,15 @@ const getConnections = async (req, res, next) => {
 
         let my_connections = [];
 
-        //
+        //iteration over connections of an user
         for (let i = 0; i < data.data().connections.length; i++) {
             const connection_id = data.data().connections[i];
-            console.log(connection_id);
 
             const _user = await firestore.collection('users').doc(connection_id);
             const _data = await _user.get();
             const n_user = new User(_data.id, _data.data().name);
             n_user.setConnections(_data.data().connections);
-            console.log(n_user);
-            my_connections.push(n_user);
+            my_connections.push({"id" : n_user.getId(), "name" : n_user.getName()});
         }
 
        
