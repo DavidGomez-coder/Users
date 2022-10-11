@@ -7,7 +7,7 @@ const router = express.Router()
 router.post('/user/add', addUser);
 router.get('/user/:id', getUser);
 router.get('/users', getAllUsers);
-router.put('/:id1/connect/:id2', setConnection);
+router.put('/addConnection', setConnection);
 router.get('/connections/:id', getConnections);
 
 module.exports = {

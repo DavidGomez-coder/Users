@@ -11,6 +11,8 @@ const addUser = async (req, res, next) => {
             ...data,
             "connections": []
         }
+        if (data.name.trim().length === 0) // not blank names
+            res.status(400).send(error.message);
 
         const user = await firestore.collection('users').doc().set(user_data);
         res.send(`User with  name ${data.name} has been added`);
@@ -65,8 +67,10 @@ const getAllUsers = async (req, res, next) => {
 
 const setConnection = async (req, res, next) => {
     try {
-        const id1 = req.params.id1;
-        const id2 = req.params.id2;
+        const data = req.body;
+        console.log(data)
+        const id1 = data.id1;
+        const id2 = data.id2;
 
         // check id similarity
         if (id1 === id2)
