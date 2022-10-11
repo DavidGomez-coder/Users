@@ -30,8 +30,9 @@ const getUser = async (req, res, next) => {
             res.status(404).send('There are not any user to display');
         } else {
             let nuser = new User(data.id, data.data().name);
+            nuser.setConnections(data.data().connections)
             
-            res.send({"id": nuser.getId(), "name" : nuser.getName()});
+            res.send(nuser);
         }
 
     } catch (error) {
@@ -50,7 +51,8 @@ const getAllUsers = async (req, res, next) => {
         } else {
             data.forEach(atrb => {
                 const nUser = new User(atrb.id, atrb.data().name);
-                users_collection.push({"id" : nUser.getId(), "name" : nUser.getName()});
+                nUser.setConnections(atrb.data().connections)
+                users_collection.push(nUser);
             });
             res.send(users_collection);
         }
