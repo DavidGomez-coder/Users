@@ -27,6 +27,7 @@ export default class UserList extends Component {
             user2_to_connect: "",
             //USER NAME
             newUserName: "",
+            userToFilter: "",
             //
             responseStatus: 200,
         }
@@ -43,73 +44,74 @@ export default class UserList extends Component {
                     users: json,
                     users_load: true,
                     current_users: json,
-                    user1_to_connect : json[0].id,
-                    user2_to_connect : json[0].id
+                    user1_to_connect: json[0].id,
+                    user2_to_connect: json[0].id,
+                    userToFilter: json[0].id,
                 });
             });
     }
 
     async addNewUser() {
         const fetch_config = {
-            method : "POST",
+            method: "POST",
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
-              },
+            },
             body: JSON.stringify({
-                "name" : this.state.newUserName
+                "name": this.state.newUserName
             })
         }
         await fetch(API_HOST + "/api/user/add", fetch_config)
-        .then((res) => {
-            this.setState(prevState => {
-                return {
-                    ...prevState,
-                    responseStatus: res.status,
-                    show_canvas: false,
-                }
-            });
+            .then((res) => {
+                this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        responseStatus: res.status,
+                        show_canvas: false,
+                    }
+                });
 
-        })
-        .catch(error => {
-            console.log(error.message)
-            this.setState(prevState => {
-                return {
-                    ...prevState,
-                    responseStatus: 404
-                }
-            });
-        })
+            })
+            .catch(error => {
+                console.log(error.message)
+                this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        responseStatus: 404
+                    }
+                });
+            })
         window.location.reload();
     }
 
-    async addNewConnection(){
+    async addNewConnection() {
         const userid1 = this.state.user1_to_connect;
         const userid2 = this.state.user2_to_connect;
 
         const fetch_config = {
-            method : "PUT",
+            method: "PUT",
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
-              },
+            },
             body: JSON.stringify({
-                "id1" : userid1,
-                "id2" : userid2
+                "id1": userid1,
+                "id2": userid2
             })
         }
 
         await fetch(API_HOST + "/api/addConnection", fetch_config)
-        .then((res) => {
-            console.log(res)
-        })
-        .catch(error => {
-            console.log(error.message)
-            this.setState(prevState => {
-                return {
-                    ...prevState,
-                    responseStatus: 404
-                }
-            });
-        })
+            .then((res) => {
+                console.log(res)
+            })
+            .catch(error => {
+                console.log(error.message)
+                this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        responseStatus: 404
+                    }
+                });
+            })
         window.location.reload();
     }
 
@@ -126,12 +128,37 @@ export default class UserList extends Component {
             .catch(error => {
                 console.log(error.message)
                 this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        responseStatus: 404
+                    }
+                });
+            })
+    }
+
+    async getUser(userid) {
+        await fetch(API_HOST + "/api/user/" + userid)
+        .then((res) => res.json())
+        .then((json) => {
+            console.log([json])
+            this.setState(prevState => {
+                return {
+                    ...prevState,
+                    users_load: true,
+                    current_users: [json]
+                }
+            })
+        })
+        .catch(error => {
+            console.log(error.message)
+            this.setState(prevState => {
                 return {
                     ...prevState,
                     responseStatus: 404
                 }
             });
-            }) 
+        });
+
     }
 
     setUser1ToConnect(userid) {
@@ -152,7 +179,7 @@ export default class UserList extends Component {
         })
     }
 
-
+    
 
     turnOnCanvas(canvas) {
         this.setState(prevState => {
@@ -181,10 +208,22 @@ export default class UserList extends Component {
                     <Container>
                         <Navbar.Brand href="#home">Users</Navbar.Brand>
                         <Nav className="me-auto">
-                            <Nav.Link href="#allusers" onClick={(ev) => {this.getAllUsers()}}>Show all users</Nav.Link>
+                            <Nav.Link href="#allusers" onClick={(ev) => { this.getAllUsers() }}>Show all users</Nav.Link>
                             <Nav.Link href="#addConnection" onClick={(ev) => { this.turnOnCanvas(CANVAS_CONNECTION) }} >New Connection</Nav.Link>
                             <Nav.Link href="#newUser" onClick={(ev) => { this.turnOnCanvas(CANVAS_USER) }}>Add New User</Nav.Link>
                         </Nav>
+                        <Form className="d-flex">
+                            < Form.Select value={this.state.userToFilter} onChange={(ev) => { this.setState({userToFilter : ev.target.value}) }}>
+
+                                {this.state.users.map((user) => (
+                                    <option value={user.id}>
+                                        {user.name}
+                                    </option>
+                                ))}
+
+                            </Form.Select>
+                            <Button variant="outline-success" onClick={(ev) => {this.getUser(this.state.userToFilter) }}>Get</Button>
+                        </Form>
                     </Container>
                 </Navbar>
 
@@ -193,7 +232,7 @@ export default class UserList extends Component {
                 <Container>
                     {this.state.current_users.map((user) => (
                         <Row id={user.id} className="justify-content-md-center">
-                            <User user_name={user.name} users_connected={user.connections.length} users_not_connected={this.state.users.length - user.connections.length} style={{ "margin": "2%" }} />
+                            <User key={user.id} user_name={user.name} users_connected={user.connections.length} users_not_connected={this.state.users.length - user.connections.length} style={{ "margin": "2%" }} />
                         </Row>
 
                     ))}
@@ -202,8 +241,8 @@ export default class UserList extends Component {
                 {/* Off Canvas */}
                 <Offcanvas show={this.state.show_canvas} onHide={(ev) => { this.turnOffCanvas() }}>
                     <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>{this.state.current_canvas === CANVAS_CONNECTION ? "Add new connection" : 
-                                          this.state.current_canvas === CANVAS_USER       ? "Add new user" : ""}</Offcanvas.Title>
+                        <Offcanvas.Title>{this.state.current_canvas === CANVAS_CONNECTION ? "Add new connection" :
+                            this.state.current_canvas === CANVAS_USER ? "Add new user" : ""}</Offcanvas.Title>
                     </Offcanvas.Header>
                     <Offcanvas.Body>
                         <Form>
@@ -233,7 +272,7 @@ export default class UserList extends Component {
                                                 </Form.Select>
                                             </Form.Group>
                                             <Form.Text className="muted">
-                                                    {this.state.user1_to_connect === this.state.user2_to_connect ? "Users cannot connect with theirself" : ""}
+                                                {this.state.user1_to_connect === this.state.user2_to_connect ? "Users cannot connect with theirself" : ""}
                                             </Form.Text>
                                             <br /> <br />
                                             <Button variant="success" onClick={(ev) => { this.addNewConnection() }} disabled={this.state.user1_to_connect === this.state.user2_to_connect}>Connect</Button>
@@ -247,16 +286,16 @@ export default class UserList extends Component {
                                             <Form.Group className="mb-3" controlId="userconnection1">
                                                 <Form.Label></Form.Label>
                                                 <Form.Control value={this.state.newUserName} type="text" placeholder="Username" onChange={(ev) => {
-                                                    this.setState({newUserName: ev.target.value})
-                                                }}/>
+                                                    this.setState({ newUserName: ev.target.value })
+                                                }} />
                                             </Form.Group>
                                             <Form.Text className="muted">
-                                                    {this.state.responseStatus !== 200 || this.state.newUserName.trim().length === 0 ? "Username format is not valid" : ""}
+                                                {this.state.responseStatus !== 200 || this.state.newUserName.trim().length === 0 ? "Username format is not valid" : ""}
                                             </Form.Text>
                                             <br /> <br />
-                                            <Button variant="success" onClick={(ev) => { this.addNewUser();}} disabled={this.state.newUserName.trim().length === 0}>Add user</Button>
-                                           
-                                            
+                                            <Button variant="success" onClick={(ev) => { this.addNewUser(); }} disabled={this.state.newUserName.trim().length === 0}>Add user</Button>
+
+
                                         </>)
                                 }
                             })()}
