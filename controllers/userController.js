@@ -80,29 +80,27 @@ const setConnection = async (req, res, next) => {
 
         if (data1.exists && data2.exists) {
             //
-            const user1_connections = data1.data().connections;
-            const user2_connections = data2.data().connections;
+            const obj_user1 = new User(data1.id, data1.data().name);
+            obj_user1.setConnections(data1.data().connections);
+            obj_user1.addConnection(id2);
 
-            if (user1_connections.includes(id2) || user2_connections.includes(id1)) {
-                res.status(404).send(`This connection already exists`);
-            } else {
-                const new_data1 = {
-                    ...data1.data(),
-                    "connections": [...data1.data().connections, id2]
-                }
+            const obj_user2 = new User(data2.id, data2.data().name);
+            obj_user2.setConnections(data2.data().connections);
+            obj_user2.addConnection(id1);
+            
+            //update
+            await user1.update({
+                ...data1.data(),
+                "connections" : obj_user1.getConnections()
+            });
+            await user2.update({
+                ...data2.data(),
+                "connections" : obj_user2.getConnections()
+            });
 
-                const new_data2 = {
-                    ...data2.data(),
-                    "connections": [...data2.data().connections, id1]
-                }
-
-
-                await user1.update(new_data1);
-                await user2.update(new_data2);
-                res.status(300).send("New connection has been stablished");
-            }
+            res.status(300).send("New connection has been stablished");
         } else {
-            res.status(404).send("Connection already exists");
+            res.status(404).send("Connection already exists"); 
         }
     } catch (error) {
         res.status(400).send(error.message);
