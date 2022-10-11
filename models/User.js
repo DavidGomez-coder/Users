@@ -17,7 +17,7 @@ class User {
 
     addConnection(newConnectUser) {
         if (this.connections.includes(newConnectUser))
-            throw new Error(`User <${this.id}:${this.name} is already connected with ${newConnectUser}`);
+            throw new Error(`User <${this.id}:${this.name}> is already connected with ${newConnectUser}`);
 
         this.connections.push(newConnectUser);
     }
