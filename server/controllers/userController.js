@@ -139,10 +139,9 @@ const getConnections = async (req, res, next) => {
             con_user.setConnections(temp_data.data().connections);
 
 
-            my_connections.push(con_user);
-            console.log(con_user.getId())
-            
+            my_connections.push(con_user);           
         }
+        console.log(my_connections)
        
         res.send(my_connections);
 

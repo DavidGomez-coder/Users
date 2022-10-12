@@ -27,10 +27,11 @@ export default class UserList extends Component {
             user2_to_connect: "",
             //USER NAME
             newUserName: "",
-            userToFilter: "",
+            userToFilter: "all",
             //
             responseStatus: 200,
-            selected_user: ""
+            selected_user: "",
+            connectionUsers: ""
         }
 
     }
@@ -102,8 +103,8 @@ export default class UserList extends Component {
         }
 
         await fetch(API_HOST + "/api/addConnection", fetch_config)
-            .then((res) => {
-                console.log(res)
+            .then(async (res) => {
+                
             })
             .catch(error => {
                 console.log(error.message)
@@ -114,20 +115,26 @@ export default class UserList extends Component {
                     }
                 });
             });
+            await this.getAllUsers();
 
-        // update users list
-        await this.getAllUsers();
     }
 
     async getAllUsers() {
+        await this.updateAllUsers();
+    }
+
+    async updateAllUsers() {
         await fetch(API_HOST + "/api/users")
             .then((res) => res.json())
             .then((json) => {
-                this.setState({
-                    users: json,
-                    users_load: true,
-                    current_users: json
-                });
+                this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        users : json,
+                        current_users : json,
+                        users_load: true,
+                    }
+                })
             })
             .catch(error => {
                 console.log(error.message)
@@ -140,9 +147,10 @@ export default class UserList extends Component {
             })
     }
 
-    async getUserConnections(selectedUser) {
-        console.log("USER_ID: " + selectedUser)
-        await fetch (API_HOST + `/api/connections/${selectedUser}`)
+    async getUserConnections() {
+        await this.getAllUsers();
+        console.log("USER_ID: " + this.state.connectionUsers)
+        await fetch (API_HOST + `/api/connections/${this.state.connectionUsers}`)
         .then ( (res) => { return res.json()})
         .then ( (json) => {
             console.log(json)
@@ -162,20 +170,26 @@ export default class UserList extends Component {
                     responseStatus: 404
                 }
             });
-        })
+        });
+        
     }
 
     async getUser(userid){
-        await fetch(API_HOST + "/api/user/" + userid)
-        .then( (res) => res.json())
-        .then((json) => {
-            this.setState(prevState => {
-                return {
-                    ...prevState,
-                    current_users: [json]
-                }
+        if (userid === "all"){
+            await this.getAllUsers();
+        }else {
+            await fetch(API_HOST + "/api/user/" + userid)
+            .then( (res) => res.json())
+            .then((json) => {
+                this.setState(prevState => {
+                    return {
+                        ...prevState,
+                        current_users: [json]
+                    }
+                })
             })
-        })
+        }
+        
     }
 
     setUser1ToConnect(userid) {
@@ -232,13 +246,14 @@ export default class UserList extends Component {
                     <Container>
                         <Navbar.Brand href="#home">Users</Navbar.Brand>
                         <Nav className="me-auto">
-                            <Nav.Link href="#allusers" onClick={(ev) => { this.getAllUsers() }}>Show all users</Nav.Link>
                             <Nav.Link href="#addConnection" onClick={(ev) => { this.turnOnCanvas(CANVAS_CONNECTION) }} >New Connection</Nav.Link>
                             <Nav.Link href="#newUser" onClick={(ev) => { this.turnOnCanvas(CANVAS_USER) }}>Add New User</Nav.Link>
                         </Nav>
                         <Form className="d-flex">
                             < Form.Select value={this.state.userToFilter} onChange={(ev) => { this.setState({userToFilter : ev.target.value}) }}>
-
+                                <option key="all-users" value="all">
+                                    All
+                                </option>
                                 {this.state.users.map((user) => (
                                     <option key={user.id} value={user.id}>
                                         {user.name}
@@ -261,8 +276,9 @@ export default class UserList extends Component {
                                                 users_not_connected={this.state.users.length - user.connections.length - 1} 
                                                 style={{ "margin": "2%" }} />
                                                 
-                            <Button style={{"marginLeft" : "1%"}} disabled={user.connections.length === 0} onClick={async (ev) => {
-                                await this.getUserConnections(user.id); }}>Connections</Button>
+                            <Button style={{"marginLeft" : "1%"}} disabled={user.connections.length === 0} onClick={ (ev) => {
+                                 this.setState(prevState => {return {...prevState, connectionUsers : user.id}})
+                                 this.getUserConnections(); }}>Connections</Button>
                             </Col>
                         </Row>
 
