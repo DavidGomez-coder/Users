@@ -6,19 +6,9 @@ import 'bootstrap/dist/js/bootstrap';
 import user_photo from "../assets/user_photo.png";
 import { PieChart, Pie, Cell, Legend, LabelList } from "recharts";
 
-const pie_data = [
-    {
-        "name" : "Conectados",
-        "value" : 200,
-    },
-
-    {
-        "name" : "No Conectados",
-        "value": 100
-    }
-]
 
 const COLORS = ["#19a82a", "#a82519"]
+
 
 
 export default class User extends Component {
@@ -40,16 +30,13 @@ export default class User extends Component {
                 }
             ]
         }
-
     }
     
 
     render () {
         return  (
             <>  
-                                {/* User and photo*/}
-                                <Col xs={6} sm={6} md={6} lg={6} xl={6} xxl={6} style={{"margin" : "1%"}}>
-                                    
+                                {/* User and photo*/}   
                                     <img src={user_photo} width="15%"/>
                                     <br />
                                     <label><strong>{this.state.user_name}</strong></label>
@@ -63,7 +50,7 @@ export default class User extends Component {
                                                     <Pie data={this.state.data_chart} dataKey="value" nameKey="name"  outerRadious={40} fill="#8884d8">
                                                         <LabelList dataKey="value" position="inside"/>
                                                         {
-                                                            this.state.data_chart.map((entry, index) => <Cell fill={COLORS[index % COLORS.length]}/>)
+                                                            this.state.data_chart.map((entry, index) => <Cell key={this.state.user_name} fill={COLORS[index % COLORS.length]}/>)
                                                         }
                                                     </Pie>
                                                 </PieChart>
@@ -72,14 +59,7 @@ export default class User extends Component {
                                         </Popover>
                                     }>
                                         <Button style={{"marginRight" : "1%"}} variant="success">Connection Stats</Button>
-                                    </OverlayTrigger>
-                                    
-                                    <Button style={{"marginLeft" : "1%"}}>Connections</Button>
-                                    
-                                    
-                                </Col>
-                                
-                                
+                                    </OverlayTrigger>               
             </>
         )
     }

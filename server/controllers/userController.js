@@ -68,7 +68,6 @@ const getAllUsers = async (req, res, next) => {
 const setConnection = async (req, res, next) => {
     try {
         const data = req.body;
-        console.log(data)
         const id1 = data.id1;
         const id2 = data.id2;
 
@@ -97,11 +96,11 @@ const setConnection = async (req, res, next) => {
             //update
             await user1.update({
                 ...data1.data(),
-                "connections" : obj_user1.getConnections()
+                "connections" : [...obj_user1.getConnections()]
             });
             await user2.update({
                 ...data2.data(),
-                "connections" : obj_user2.getConnections()
+                "connections" : [...obj_user2.getConnections()]
             });
 
             res.status(300).send("New connection has been stablished");
@@ -123,22 +122,29 @@ const getConnections = async (req, res, next) => {
         if (!data.exists)
             res.status(404).send(`User with id ${id} doesnt exists`);
 
+        const user_u = new User(data.id, data.data().name);
+        user_u.setConnections(data.data().connections);
+        
         let my_connections = [];
 
-        //iteration over connections of an user
-        for (let i = 0; i < data.data().connections.length; i++) {
-            const connection_id = data.data().connections[i];
 
-            const _user = await firestore.collection('users').doc(connection_id);
-            const _data = await _user.get();
-            const n_user = new User(_data.id, _data.data().name);
-            n_user.setConnections(_data.data().connections);
-            my_connections.push({"id" : n_user.getId(), "name" : n_user.getName()});
+        for (let i=0; i<user_u.getConnections().length; i++){
+            const con_id = user_u.getConnections()[i];
+            const temp_user = await firestore.collection('users').doc(con_id);
+            const temp_data = await temp_user.get();
+
+            
+
+            const con_user = new User(temp_data.id, temp_data.data().name);
+            con_user.setConnections(temp_data.data().connections);
+
+
+            my_connections.push(con_user);
+            console.log(con_user.getId())
+            
         }
-
        
-
-        await res.status(300).send(my_connections);
+        res.send(my_connections);
 
     } catch (error) {
         res.status(400).send(error.message);

@@ -1,6 +1,6 @@
 import { Component } from "react";
 import User from "./User.js";
-import { Container, Nav, Navbar, Offcanvas, Button, Form } from 'react-bootstrap';
+import { Container, Nav, Navbar, Offcanvas, Button, Form, Col } from 'react-bootstrap';
 import { Row } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap';
@@ -30,6 +30,7 @@ export default class UserList extends Component {
             userToFilter: "",
             //
             responseStatus: 200,
+            selected_user: ""
         }
 
     }
@@ -81,7 +82,8 @@ export default class UserList extends Component {
                     }
                 });
             })
-        window.location.reload();
+        // update users list
+        await this.getAllUsers();
     }
 
     async addNewConnection() {
@@ -111,8 +113,10 @@ export default class UserList extends Component {
                         responseStatus: 404
                     }
                 });
-            })
-        window.location.reload();
+            });
+
+        // update users list
+        await this.getAllUsers();
     }
 
     async getAllUsers() {
@@ -136,29 +140,42 @@ export default class UserList extends Component {
             })
     }
 
-    async getUser(userid) {
-        await fetch(API_HOST + "/api/user/" + userid)
-        .then((res) => res.json())
-        .then((json) => {
-            console.log([json])
+    async getUserConnections(selectedUser) {
+        console.log("USER_ID: " + selectedUser)
+        await fetch (API_HOST + `/api/connections/${selectedUser}`)
+        .then ( (res) => { return res.json()})
+        .then ( (json) => {
+            console.log(json)
             this.setState(prevState => {
                 return {
                     ...prevState,
-                    users_load: true,
+                    current_users: json  
+                }
+            })
+        })
+        .catch (error => {
+            console.log(error.message);
+            this.setState(prevState => {
+                return {
+                    ...prevState,
+                    users_load: false,
+                    responseStatus: 404
+                }
+            });
+        })
+    }
+
+    async getUser(userid){
+        await fetch(API_HOST + "/api/user/" + userid)
+        .then( (res) => res.json())
+        .then((json) => {
+            this.setState(prevState => {
+                return {
+                    ...prevState,
                     current_users: [json]
                 }
             })
         })
-        .catch(error => {
-            console.log(error.message)
-            this.setState(prevState => {
-                return {
-                    ...prevState,
-                    responseStatus: 404
-                }
-            });
-        });
-
     }
 
     setUser1ToConnect(userid) {
@@ -179,7 +196,14 @@ export default class UserList extends Component {
         })
     }
 
-    
+    setSelectedUser(selectedUser){
+        this.setState(prevState => {
+            return {
+                ...prevState,
+                selected_user: selectedUser
+            }
+        })
+    }
 
     turnOnCanvas(canvas) {
         this.setState(prevState => {
@@ -216,7 +240,7 @@ export default class UserList extends Component {
                             < Form.Select value={this.state.userToFilter} onChange={(ev) => { this.setState({userToFilter : ev.target.value}) }}>
 
                                 {this.state.users.map((user) => (
-                                    <option value={user.id}>
+                                    <option key={user.id} value={user.id}>
                                         {user.name}
                                     </option>
                                 ))}
@@ -232,7 +256,14 @@ export default class UserList extends Component {
                 <Container>
                     {this.state.current_users.map((user) => (
                         <Row id={user.id} className="justify-content-md-center">
-                            <User key={user.id} user_name={user.name} users_connected={user.connections.length} users_not_connected={this.state.users.length - user.connections.length} style={{ "margin": "2%" }} />
+                            <Col xs={6} sm={6} md={6} lg={6} xl={6} xxl={6} style={{"margin" : "1%"}}>
+                            <User key={user.id} user_name={user.name} users_connected={user.connections.length} 
+                                                users_not_connected={this.state.users.length - user.connections.length - 1} 
+                                                style={{ "margin": "2%" }} />
+                                                
+                            <Button style={{"marginLeft" : "1%"}} disabled={user.connections.length === 0} onClick={async (ev) => {
+                                await this.getUserConnections(user.id); }}>Connections</Button>
+                            </Col>
                         </Row>
 
                     ))}
@@ -255,7 +286,7 @@ export default class UserList extends Component {
                                                 <Form.Label>User 1</Form.Label>
                                                 <Form.Select value={this.state.user1_to_connect} onChange={(ev) => { this.setUser1ToConnect(ev.target.value) }}>
                                                     {this.state.users.map((user) => (
-                                                        <option value={user.id}>
+                                                        <option key={user.id + "_2"} value={user.id}>
                                                             {user.name}
                                                         </option>
                                                     ))}
@@ -265,7 +296,7 @@ export default class UserList extends Component {
                                                 <Form.Label>User 2</Form.Label>
                                                 <Form.Select value={this.state.user2_to_connect} onChange={(ev) => { this.setUser2ToConnect(ev.target.value) }}>
                                                     {this.state.users.map((user) => (
-                                                        <option value={user.id}>
+                                                        <option key={user.id + "_3"} value={user.id}>
                                                             {user.name}
                                                         </option>
                                                     ))}
@@ -275,7 +306,7 @@ export default class UserList extends Component {
                                                 {this.state.user1_to_connect === this.state.user2_to_connect ? "Users cannot connect with theirself" : ""}
                                             </Form.Text>
                                             <br /> <br />
-                                            <Button variant="success" onClick={(ev) => { this.addNewConnection() }} disabled={this.state.user1_to_connect === this.state.user2_to_connect}>Connect</Button>
+                                            <Button variant="success" onClick={(ev) => { this.addNewConnection(); this.turnOffCanvas(); }} disabled={this.state.user1_to_connect === this.state.user2_to_connect}>Connect</Button>
                                             <br />
 
                                         </>
@@ -293,7 +324,7 @@ export default class UserList extends Component {
                                                 {this.state.responseStatus !== 200 || this.state.newUserName.trim().length === 0 ? "Username format is not valid" : ""}
                                             </Form.Text>
                                             <br /> <br />
-                                            <Button variant="success" onClick={(ev) => { this.addNewUser(); }} disabled={this.state.newUserName.trim().length === 0}>Add user</Button>
+                                            <Button variant="success" onClick={(ev) => { this.addNewUser(); this.turnOffCanvas(); }} disabled={this.state.newUserName.trim().length === 0}>Add user</Button>
 
 
                                         </>)
