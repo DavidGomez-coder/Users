@@ -15,6 +15,9 @@ $ npm start
 ```
 La dirección despliegue del servidor, será http://localhost:8888.
 
+### Tests con Postman
+En el directorio [postman.test](./server/postman.tests/) se incluyen los tests realizados para comprobar el funcionamiento de la API. Para ello, se proporciona el fichero [usersapp.postman_collection-tests.json](./server/postman.tests/usersapp.postman_collection-tests.json); que se debe de importar en la aplicación postman para su uso. Los tests son <strong>manuales</strong>; es decir, se debe ejecutar el caso que se quiera comprobar.
+
 ## Despliegue del cliente
 Al igual que con el servidor, hay que asegurarse de tener instalado NodeJs. Tras esto, actuamos de la misma manera, pero en este caso, nos deberemos de mover al directorio de nombre <strong>client</strong>.
 Los comandos para instalar dependencias e iniciar la aplicación son los mismos:
